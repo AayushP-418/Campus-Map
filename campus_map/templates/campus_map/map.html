@@ -48,34 +48,247 @@
             z-index: 1;
         }
         
-        .info-box {
-            background-color: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            font-size: 14px;
-            line-height: 1.6;
+        /* Popup Card Styles */
+        .popup-card {
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
         }
         
-        .info-box h3 {
-            margin: 0 0 10px 0;
+        .popup-header {
+            background-color: #B3A369;
+            color: white;
+            padding: 20px;
+            margin: -10px -10px 15px -10px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .popup-header h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        .popup-description {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .popup-gallery {
+            margin-top: 15px;
+        }
+        
+        .popup-gallery-title {
+            font-size: 16px;
+            font-weight: 600;
             color: #B3A369;
+            margin-bottom: 12px;
+        }
+        
+        .popup-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .popup-gallery-item {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            overflow: hidden;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .popup-gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .popup-gallery-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .popup-gallery-item .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            padding: 8px;
+            font-size: 11px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .popup-gallery-item:hover .gallery-caption {
+            opacity: 1;
+        }
+        
+        /* Lightbox Modal */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .lightbox-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 90vh;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+        }
+        
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .lightbox-caption {
+            color: white;
+            padding: 20px;
             font-size: 18px;
         }
         
-        .info-box p {
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            z-index: 10001;
+        }
+        
+        .lightbox-close:hover {
+            color: #B3A369;
+        }
+        
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            transition: background-color 0.3s;
+            user-select: none;
+            z-index: 10001;
+        }
+        
+        .lightbox-nav:hover {
+            background-color: rgba(179, 163, 105, 0.8);
+        }
+        
+        .lightbox-prev {
+            left: 20px;
+        }
+        
+        .lightbox-next {
+            right: 20px;
+        }
+        
+        /* Leaflet popup custom styling */
+        .leaflet-popup-content-wrapper {
+            padding: 0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .leaflet-popup-content {
             margin: 0;
-            color: #333;
+            padding: 10px;
+            min-width: 300px;
+        }
+        
+        .landmark-link {
+            cursor: pointer;
+            color: #B3A369;
+            text-decoration: underline;
+            padding: 2px 0;
+            display: inline-block;
+        }
+        
+        .landmark-link:hover {
+            color: #8B7A4A;
+        }
+        
+        @media (max-width: 768px) {
+            .popup-gallery-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .popup-card {
+                max-width: 90vw;
+            }
+            
+            .lightbox-nav {
+                font-size: 40px;
+                padding: 15px;
+            }
+            
+            .lightbox-close {
+                top: 10px;
+                right: 20px;
+                font-size: 40px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🏛️ Georgia Tech Campus Map</h1>
-        <p>Explore landmarks and buildings on campus</p>
+        <p>Click on markers to see photo galleries and details!</p>
     </div>
     
     <div id="map"></div>
+    
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="event.stopPropagation(); closeLightbox()">&times;</span>
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
+        <span class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); changeLightboxImage(-1)">&#10094;</span>
+        <span class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); changeLightboxImage(1)">&#10095;</span>
+    </div>
     
     <script>
         // Define campus boundary coordinates (approximate campus perimeter)
@@ -118,14 +331,102 @@
             dashArray: '10, 5' // Dashed border style
         }).addTo(map);
         
+        // Global variables for lightbox
+        var currentLightboxPhotos = [];
+        var currentLightboxIndex = 0;
+        
+        // Lightbox functions
+        function openLightbox(photos, index) {
+            currentLightboxPhotos = photos;
+            currentLightboxIndex = index;
+            updateLightbox();
+            document.getElementById('lightbox').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        function changeLightboxImage(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex < 0) {
+                currentLightboxIndex = currentLightboxPhotos.length - 1;
+            } else if (currentLightboxIndex >= currentLightboxPhotos.length) {
+                currentLightboxIndex = 0;
+            }
+            updateLightbox();
+        }
+        
+        function updateLightbox() {
+            var lightboxImage = document.getElementById('lightbox-image');
+            var lightboxCaption = document.getElementById('lightbox-caption');
+            
+            if (currentLightboxPhotos.length > 0 && currentLightboxIndex < currentLightboxPhotos.length) {
+                lightboxImage.src = currentLightboxPhotos[currentLightboxIndex].image_url;
+                lightboxCaption.textContent = currentLightboxPhotos[currentLightboxIndex].caption || '';
+            }
+        }
+        
+        // Close lightbox on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeLightbox();
+            } else if (event.key === 'ArrowLeft') {
+                changeLightboxImage(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeLightboxImage(1);
+            }
+        });
+        
+        // Function to generate popup HTML
+        function generatePopupHTML(landmark) {
+            var html = '<div class="popup-card">';
+            html += '<div class="popup-header"><h3>' + landmark.name + '</h3></div>';
+            html += '<div class="popup-description">' + landmark.description + '</div>';
+            
+            if (landmark.photos && landmark.photos.length > 0) {
+                html += '<div class="popup-gallery">';
+                html += '<div class="popup-gallery-title">📸 Photo Gallery</div>';
+                html += '<div class="popup-gallery-grid">';
+                
+                landmark.photos.forEach(function(photo, index) {
+                    html += '<div class="popup-gallery-item" onclick="openLightbox(landmarkPhotos_' + landmark.id + ', ' + index + ')">';
+                    html += '<img src="' + photo.image_url + '" alt="' + (photo.caption || '') + '" loading="lazy">';
+                    if (photo.caption) {
+                        html += '<div class="gallery-caption">' + photo.caption + '</div>';
+                    }
+                    html += '</div>';
+                });
+                
+                html += '</div></div>';
+                
+                // Store photos in a global variable for lightbox
+                window['landmarkPhotos_' + landmark.id] = landmark.photos;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+        
         // Landmarks data from Django template
         var landmarks = [
             {% for landmark in landmarks %}
             {
-                name: "{{ landmark.name }}",
+                id: {{ landmark.id }},
+                name: "{{ landmark.name|escapejs }}",
                 lat: {{ landmark.latitude }},
                 lng: {{ landmark.longitude }},
-                description: "{{ landmark.description }}"
+                description: "{{ landmark.description|escapejs }}",
+                photos: [
+                    {% for photo in landmark.photos %}
+                    {
+                        image_url: "{{ photo.image_url|escapejs }}",
+                        caption: "{{ photo.caption|escapejs }}"
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ];
@@ -134,28 +435,48 @@
         landmarks.forEach(function(landmark) {
             var marker = L.marker([landmark.lat, landmark.lng])
                 .addTo(map)
-                .bindPopup(
-                    '<div class="info-box">' +
-                    '<h3>' + landmark.name + '</h3>' +
-                    '<p>' + landmark.description + '</p>' +
-                    '</div>'
-                );
+                .bindPopup(generatePopupHTML(landmark), {
+                    maxWidth: 500,
+                    className: 'landmark-popup'
+                });
         });
         
-        // Add a control to show all landmarks
+        // Add a control to show all landmarks with clickable links
         var landmarksControl = L.control({position: 'topright'});
         
         landmarksControl.onAdd = function(map) {
             var div = L.DomUtil.create('div', 'landmarks-control');
             div.innerHTML = '<strong>Landmarks:</strong><br>';
             landmarks.forEach(function(landmark) {
-                div.innerHTML += '📍 ' + landmark.name + '<br>';
+                div.innerHTML += '<span class="landmark-link" onclick="focusLandmark(' + landmark.id + ')">📍 ' + landmark.name + '</span><br>';
             });
-            div.style.cssText = 'background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px;';
+            div.style.cssText = 'background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px; max-height: 400px; overflow-y: auto;';
             return div;
         };
         
         landmarksControl.addTo(map);
+        
+        // Function to focus on a landmark when clicked from the list
+        function focusLandmark(landmarkId) {
+            var landmark = landmarks.find(function(l) { return l.id === landmarkId; });
+            if (landmark) {
+                map.setView([landmark.lat, landmark.lng], 18);
+                // Find and open the marker popup
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        var latlng = layer.getLatLng();
+                        if (Math.abs(latlng.lat - landmark.lat) < 0.0001 && 
+                            Math.abs(latlng.lng - landmark.lng) < 0.0001) {
+                            layer.openPopup();
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Make focusLandmark available globally
+        window.focusLandmark = focusLandmark;
+        window.openLightbox = openLightbox;
     </script>
 </body>
 </html>
