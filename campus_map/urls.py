@@ -1,19 +1,9 @@
-"""
-URL configuration for campus_map_project project.
-"""
-from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('campus_map.urls')),
-
-    # NEW: Add basic authentication URLs
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('', views.campus_map_view, name='campus_map'),
+    path('landmark/<int:landmark_id>/', views.landmark_detail, name='landmark_detail'),
+    path('landmark/<int:landmark_id>/upload/', views.upload_photo, name='upload_photo'),
+    path('landmark/<int:landmark_id>/photos/', views.landmark_photos_api, name='landmark_photos_api'),
 ]
-
-# Serve media files during development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
