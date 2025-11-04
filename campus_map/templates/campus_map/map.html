@@ -269,12 +269,254 @@
                 font-size: 40px;
             }
         }
+        
+        /* Weather Button Styles */
+        .weather-button {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            z-index: 1000;
+            background-color: #B3A369;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .weather-button.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        
+        .weather-button:hover {
+            background-color: #8B7A4A;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+        
+        .weather-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Weather Panel Styles */
+        .weather-panel {
+            position: fixed;
+            left: -400px;
+            top: 120px;
+            width: 380px;
+            height: calc(100vh - 140px);
+            background-color: white;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+            z-index: 999;
+            transition: left 0.4s ease;
+            border-radius: 0 10px 10px 0;
+            overflow-y: auto;
+        }
+        
+        .weather-panel.open {
+            left: 0;
+        }
+        
+        .weather-panel-header {
+            background-color: #B3A369;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .weather-panel-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+        
+        .weather-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+        
+        .weather-close-btn:hover {
+            transform: rotate(90deg);
+        }
+        
+        .weather-content {
+            padding: 25px;
+        }
+        
+        .weather-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .weather-error {
+            text-align: center;
+            padding: 20px;
+            color: #d32f2f;
+            background-color: #ffebee;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        
+        .weather-current {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .weather-temp {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .weather-description {
+            font-size: 18px;
+            text-transform: capitalize;
+            margin-bottom: 15px;
+        }
+        
+        .weather-icon {
+            font-size: 64px;
+            margin: 15px 0;
+        }
+        
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .weather-detail-item {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .weather-detail-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .weather-detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .weather-forecast-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #B3A369;
+            margin: 25px 0 15px 0;
+        }
+        
+        .weather-forecast {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .forecast-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #B3A369;
+        }
+        
+        .forecast-date {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .forecast-temp {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .forecast-desc {
+            font-size: 14px;
+            color: #888;
+            text-transform: capitalize;
+        }
+        
+        @media (max-width: 768px) {
+            .weather-button {
+                left: 10px;
+                bottom: 10px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .weather-panel {
+                width: calc(100vw - 40px);
+                left: -100vw;
+            }
+            
+            .weather-panel.open {
+                left: 0;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🏛️ Georgia Tech Campus Map</h1>
         <p>Click on markers to see photo galleries and details!</p>
+    </div>
+    
+    <!-- Weather Button -->
+    <button class="weather-button" onclick="toggleWeatherPanel()">
+        <span>🌤️</span>
+        <span>Atlanta Weather</span>
+    </button>
+    
+    <!-- Weather Panel -->
+    <div id="weather-panel" class="weather-panel">
+        <div class="weather-panel-header">
+            <h2>Atlanta Weather</h2>
+            <button class="weather-close-btn" onclick="toggleWeatherPanel()">&times;</button>
+        </div>
+        <div id="weather-content" class="weather-content">
+            <div class="weather-loading">
+                <p>Loading weather data...</p>
+            </div>
+        </div>
     </div>
     
     <div id="map"></div>
@@ -477,6 +719,196 @@
         // Make focusLandmark available globally
         window.focusLandmark = focusLandmark;
         window.openLightbox = openLightbox;
+        
+        // Weather Panel Functionality
+        let weatherPanelOpen = false;
+        
+        function toggleWeatherPanel() {
+            const panel = document.getElementById('weather-panel');
+            const button = document.querySelector('.weather-button');
+            weatherPanelOpen = !weatherPanelOpen;
+            
+            if (weatherPanelOpen) {
+                panel.classList.add('open');
+                button.classList.add('hidden');
+                // Load weather data when panel opens
+                loadWeatherData();
+            } else {
+                panel.classList.remove('open');
+                button.classList.remove('hidden');
+            }
+        }
+        
+        async function loadWeatherData() {
+            const weatherContent = document.getElementById('weather-content');
+            weatherContent.innerHTML = '<div class="weather-loading"><p>Loading weather data...</p></div>';
+            
+            try {
+                // Using Open-Meteo API (no API key required)
+                // Atlanta coordinates: 33.7490° N, 84.3880° W
+                const lat = 33.7490;
+                const lon = -84.3880;
+                
+                // Fetch current weather
+                const currentWeatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York`;
+                
+                // Fetch forecast
+                const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=America%2FNew_York&forecast_days=5`;
+                
+                const [currentResponse, forecastResponse] = await Promise.all([
+                    fetch(currentWeatherUrl),
+                    fetch(forecastUrl)
+                ]);
+                
+                if (!currentResponse.ok || !forecastResponse.ok) {
+                    throw new Error('Failed to fetch weather data');
+                }
+                
+                const currentData = await currentResponse.json();
+                const forecastData = await forecastResponse.json();
+                
+                displayWeatherData(currentData, forecastData);
+                
+            } catch (error) {
+                console.error('Error fetching weather:', error);
+                weatherContent.innerHTML = `
+                    <div class="weather-error">
+                        <p>Unable to load weather data. Please try again later.</p>
+                        <p style="font-size: 12px; margin-top: 10px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function getWeatherIcon(weatherCode) {
+            // WMO Weather interpretation codes
+            const weatherIcons = {
+                0: '☀️',  // Clear sky
+                1: '🌤️',  // Mainly clear
+                2: '⛅',  // Partly cloudy
+                3: '☁️',  // Overcast
+                45: '🌫️', // Foggy
+                48: '🌫️', // Depositing rime fog
+                51: '🌦️', // Light drizzle
+                53: '🌦️', // Moderate drizzle
+                55: '🌧️', // Dense drizzle
+                61: '🌧️', // Slight rain
+                63: '🌧️', // Moderate rain
+                65: '🌧️', // Heavy rain
+                71: '🌨️', // Slight snow
+                73: '🌨️', // Moderate snow
+                75: '🌨️', // Heavy snow
+                77: '❄️',  // Snow grains
+                80: '🌦️', // Slight rain showers
+                81: '🌧️', // Moderate rain showers
+                82: '⛈️', // Violent rain showers
+                85: '🌨️', // Slight snow showers
+                86: '🌨️', // Heavy snow showers
+                95: '⛈️', // Thunderstorm
+                96: '⛈️', // Thunderstorm with slight hail
+                99: '⛈️'  // Thunderstorm with heavy hail
+            };
+            return weatherIcons[weatherCode] || '🌡️';
+        }
+        
+        function getWeatherDescription(weatherCode) {
+            const descriptions = {
+                0: 'Clear sky',
+                1: 'Mainly clear',
+                2: 'Partly cloudy',
+                3: 'Overcast',
+                45: 'Foggy',
+                48: 'Depositing rime fog',
+                51: 'Light drizzle',
+                53: 'Moderate drizzle',
+                55: 'Dense drizzle',
+                61: 'Slight rain',
+                63: 'Moderate rain',
+                65: 'Heavy rain',
+                71: 'Slight snow',
+                73: 'Moderate snow',
+                75: 'Heavy snow',
+                77: 'Snow grains',
+                80: 'Slight rain showers',
+                81: 'Moderate rain showers',
+                82: 'Violent rain showers',
+                85: 'Slight snow showers',
+                86: 'Heavy snow showers',
+                95: 'Thunderstorm',
+                96: 'Thunderstorm with slight hail',
+                99: 'Thunderstorm with heavy hail'
+            };
+            return descriptions[weatherCode] || 'Unknown';
+        }
+        
+        function displayWeatherData(currentData, forecastData) {
+            const current = currentData.current;
+            const daily = forecastData.daily;
+            
+            const weatherIcon = getWeatherIcon(current.weather_code);
+            const weatherDesc = getWeatherDescription(current.weather_code);
+            
+            let html = `
+                <div class="weather-current">
+                    <div class="weather-icon">${weatherIcon}</div>
+                    <div class="weather-temp">${Math.round(current.temperature_2m)}°F</div>
+                    <div class="weather-description">${weatherDesc}</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Feels like ${Math.round(current.apparent_temperature)}°F</div>
+                </div>
+                
+                <div class="weather-details">
+                    <div class="weather-detail-item">
+                        <div class="weather-detail-label">Humidity</div>
+                        <div class="weather-detail-value">${current.relative_humidity_2m}%</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="weather-detail-label">Wind Speed</div>
+                        <div class="weather-detail-value">${Math.round(current.wind_speed_10m)} mph</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="weather-detail-label">Precipitation</div>
+                        <div class="weather-detail-value">${current.precipitation}" </div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="weather-detail-label">Location</div>
+                        <div class="weather-detail-value">Atlanta, GA</div>
+                    </div>
+                </div>
+                
+                <div class="weather-forecast-title">5-Day Forecast</div>
+                <div class="weather-forecast">
+            `;
+            
+            // Add forecast items
+            for (let i = 0; i < Math.min(5, daily.time.length); i++) {
+                const date = new Date(daily.time[i]);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const icon = getWeatherIcon(daily.weather_code[i]);
+                const maxTemp = Math.round(daily.temperature_2m_max[i]);
+                const minTemp = Math.round(daily.temperature_2m_min[i]);
+                const desc = getWeatherDescription(daily.weather_code[i]);
+                
+                html += `
+                    <div class="forecast-item">
+                        <div>
+                            <div class="forecast-date">${dayName}</div>
+                            <div class="forecast-desc">${desc}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 24px;">${icon}</span>
+                            <div class="forecast-temp">${maxTemp}° / ${minTemp}°</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            document.getElementById('weather-content').innerHTML = html;
+        }
+        
+        // Make weather functions available globally
+        window.toggleWeatherPanel = toggleWeatherPanel;
     </script>
 </body>
 </html>
