@@ -1,20 +1,13 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from .models import Landmark
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from .models import Landmark, LandmarkPhoto
 from .forms import PhotoUploadForm
 
 def campus_map_view(request):
-    """
-    View for displaying the interactive Georgia Tech campus map.
-    """
-    # Get all landmarks from database, or use fallback if none exist
     landmarks = Landmark.objects.all()
 
-    # If no landmarks in database, use default data (with corrected coordinates)
     if not landmarks.exists():
         landmarks_data = [
             {
@@ -117,16 +110,15 @@ def campus_map_view(request):
     else:
         landmarks_data = []
         for landmark in landmarks:
-            photos = landmark.photos.all()
+            photos = landmark.photos.filter(is_approved=True)
             if not photos.exists():
-                # Use placeholder images if no photos in database
                 photos_data = [
                     {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+1', 'caption': f'{landmark.name} - Photo 1'},
                     {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+2', 'caption': f'{landmark.name} - Photo 2'},
                     {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+3', 'caption': f'{landmark.name} - Photo 3'},
                 ]
             else:
-                photos_data = [{'image_url': photo.image_url, 'caption': photo.caption} for photo in photos]
+                photos_data = [{'image_url': photo.image_url_display, 'caption': photo.caption} for photo in photos]
 
             landmarks_data.append({
                 'id': landmark.id,
@@ -137,24 +129,14 @@ def campus_map_view(request):
                 'photos': photos_data
             })
 
-    context = {
-        'landmarks': landmarks_data,
-    }
-
+    context = {'landmarks': landmarks_data}
     return render(request, 'campus_map/map.html', context)
 
-
 def landmark_detail(request, landmark_id):
-    """
-    View for displaying detailed information about a specific landmark,
-    including photo gallery and description.
-    """
-    # Try to get from database first
     try:
         landmark = Landmark.objects.get(id=landmark_id)
-        photos = landmark.photos.all()
+        photos = landmark.photos.filter(is_approved=True)
 
-        # If no photos in database, use placeholder images
         if not photos.exists():
             photos_data = [
                 {'image_url': 'https://via.placeholder.com/800x600?text=' + landmark.name.replace(' ', '+'), 'caption': f'{landmark.name} - Photo 1'},
@@ -162,7 +144,7 @@ def landmark_detail(request, landmark_id):
                 {'image_url': 'https://via.placeholder.com/800x600?text=' + landmark.name.replace(' ', '+') + '+3', 'caption': f'{landmark.name} - Photo 3'},
             ]
         else:
-            photos_data = [{'image_url': photo.image_url, 'caption': photo.caption} for photo in photos]
+            photos_data = [{'image_url': photo.image_url_display, 'caption': photo.caption} for photo in photos]
 
         context = {
             'landmark': landmark,
@@ -171,7 +153,6 @@ def landmark_detail(request, landmark_id):
             'longitude': float(landmark.longitude),
         }
     except Landmark.DoesNotExist:
-        # Fallback to default data if landmark not in database
         default_landmarks = {
             1: {'name': 'Tech Tower', 'description': 'The iconic Tech Tower, the main administrative building of Georgia Tech.', 'latitude': 33.7756, 'longitude': -84.3963},
             2: {'name': 'Bobby Dodd Stadium', 'description': 'Home of the Georgia Tech Yellow Jackets football team.', 'latitude': 33.7725, 'longitude': -84.3933},
@@ -253,10 +234,7 @@ def upload_photo(request, landmark_id):
 def landmark_photos_api(request, landmark_id):
     landmark = get_object_or_404(Landmark, id=landmark_id)
 
-    photos = LandmarkPhoto.objects.filter(
-        landmark=landmark,
-        is_approved=True
-    ).order_by('order', '-uploaded_at')
+    photos = LandmarkPhoto.objects.filter(landmark=landmark, is_approved=True).order_by('order', '-uploaded_at')
 
     photos_data = []
     for photo in photos:
@@ -265,7 +243,7 @@ def landmark_photos_api(request, landmark_id):
             'url': photo.image_url_display,
             'caption': photo.caption,
             'uploaded_by': photo.uploaded_by.username if photo.uploaded_by else 'Anonymous',
-            'uploaded_at': photo.uploaded_at.strftime('%Y-%m-%d %H:%M'),
+            'uploaded_at': photo.uploaded_at.strftime('%Y-%m-%d %H:%M') if photo.uploaded_at else '',
             'likes': photo.likes,
             'order': photo.order
         })
@@ -275,45 +253,3 @@ def landmark_photos_api(request, landmark_id):
         'photos': photos_data,
         'total_photos': len(photos_data)
     })
-
-# Update your existing campus_map_view to use image_url_display
-def campus_map_view(request):
-    landmarks = Landmark.objects.all()
-
-    if not landmarks.exists():
-        # Your existing fallback data
-        landmarks_data = [
-            {
-                'id': 1,
-                'name': 'Tech Tower',
-                'latitude': 33.7756,
-                'longitude': -84.3963,
-                'description': 'The iconic Tech Tower, the main administrative building of Georgia Tech.',
-                'photos': [
-                    {'image_url': 'https://via.placeholder.com/600x400?text=Tech+Tower+1', 'caption': 'Tech Tower - Photo 1'},
-                ]
-            },
-            # ... your other landmarks
-        ]
-    else:
-        landmarks_data = []
-        for landmark in landmarks:
-            photos = landmark.photos.filter(is_approved=True)  # Only show approved photos
-            if not photos.exists():
-                photos_data = [
-                    {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+1', 'caption': f'{landmark.name} - Photo 1'},
-                ]
-            else:
-                photos_data = [{'image_url': photo.image_url_display, 'caption': photo.caption} for photo in photos]
-
-            landmarks_data.append({
-                'id': landmark.id,
-                'name': landmark.name,
-                'latitude': float(landmark.latitude),
-                'longitude': float(landmark.longitude),
-                'description': landmark.description,
-                'photos': photos_data
-            })
-
-    context = {'landmarks': landmarks_data}
-    return render(request, 'campus_map/map.html', context)
