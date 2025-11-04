@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Georgia Tech Campus Map</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background-color: #B3A369;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        #map {
+            height: calc(100vh - 120px);
+            width: 100%;
+            margin: 0;
+            z-index: 1;
+        }
+        
+        .info-box {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #B3A369;
+            font-size: 18px;
+        }
+        
+        .info-box p {
+            margin: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ Georgia Tech Campus Map</h1>
+        <p>Explore landmarks and buildings on campus</p>
+    </div>
+    
+    <div id="map"></div>
+    
+    <script>
+        // Define campus boundary coordinates (approximate campus perimeter)
+        var campusBoundary = [
+            [33.7785, -84.4000], // Northwest corner
+            [33.7785, -84.3900], // Northeast corner
+            [33.7700, -84.3900], // Southeast corner
+            [33.7700, -84.4000], // Southwest corner
+            [33.7785, -84.4000]  // Close the polygon
+        ];
+        
+        // Define map bounds to restrict panning (slightly larger than boundary for padding)
+        var campusBounds = [
+            [33.7690, -84.4010], // Southwest corner
+            [33.7795, -84.3890]  // Northeast corner
+        ];
+        
+        // Initialize the map centered on Georgia Tech campus with restricted bounds
+        var map = L.map('map', {
+            center: [33.7756, -84.3963],
+            zoom: 16,
+            maxBounds: campusBounds,
+            maxBoundsViscosity: 1.0, // Prevents panning outside bounds
+            minZoom: 15, // Prevent zooming out too far
+            maxZoom: 19
+        });
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Add campus boundary polygon with border
+        var campusBorder = L.polygon(campusBoundary, {
+            color: '#B3A369', // Georgia Tech gold
+            weight: 3,
+            fillColor: '#B3A369',
+            fillOpacity: 0.1,
+            dashArray: '10, 5' // Dashed border style
+        }).addTo(map);
+        
+        // Landmarks data from Django template
+        var landmarks = [
+            {% for landmark in landmarks %}
+            {
+                name: "{{ landmark.name }}",
+                lat: {{ landmark.latitude }},
+                lng: {{ landmark.longitude }},
+                description: "{{ landmark.description }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        // Add markers for each landmark
+        landmarks.forEach(function(landmark) {
+            var marker = L.marker([landmark.lat, landmark.lng])
+                .addTo(map)
+                .bindPopup(
+                    '<div class="info-box">' +
+                    '<h3>' + landmark.name + '</h3>' +
+                    '<p>' + landmark.description + '</p>' +
+                    '</div>'
+                );
+        });
+        
+        // Add a control to show all landmarks
+        var landmarksControl = L.control({position: 'topright'});
+        
+        landmarksControl.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'landmarks-control');
+            div.innerHTML = '<strong>Landmarks:</strong><br>';
+            landmarks.forEach(function(landmark) {
+                div.innerHTML += '📍 ' + landmark.name + '<br>';
+            });
+            div.style.cssText = 'background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px;';
+            return div;
+        };
+        
+        landmarksControl.addTo(map);
+    </script>
+</body>
+</html>
+
