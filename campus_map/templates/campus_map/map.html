@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Georgia Tech Campus Map</title>
-    
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
-    
+
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
-    
+
     <style>
         body {
             margin: 0;
@@ -22,7 +22,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f5f5;
         }
-        
+
         .header {
             background-color: #B3A369;
             color: white;
@@ -30,24 +30,24 @@
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
+
         .header h1 {
             margin: 0;
             font-size: 2em;
         }
-        
+
         .header p {
             margin: 10px 0 0 0;
             opacity: 0.9;
         }
-        
+
         #map {
             height: calc(100vh - 120px);
             width: 100%;
             margin: 0;
             z-index: 1;
         }
-        
+
         /* Popup Card Styles */
         .popup-card {
             max-width: 500px;
@@ -56,7 +56,7 @@
             margin: 0;
             padding: 0;
         }
-        
+
         .popup-header {
             background-color: #B3A369;
             color: white;
@@ -64,38 +64,38 @@
             margin: -10px -10px 15px -10px;
             border-radius: 5px 5px 0 0;
         }
-        
+
         .popup-header h3 {
             margin: 0;
             font-size: 22px;
             font-weight: 600;
         }
-        
+
         .popup-description {
             color: #333;
             line-height: 1.6;
             margin-bottom: 20px;
             font-size: 14px;
         }
-        
+
         .popup-gallery {
             margin-top: 15px;
         }
-        
+
         .popup-gallery-title {
             font-size: 16px;
             font-weight: 600;
             color: #B3A369;
             margin-bottom: 12px;
         }
-        
+
         .popup-gallery-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-bottom: 10px;
         }
-        
+
         .popup-gallery-item {
             position: relative;
             width: 100%;
@@ -106,12 +106,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        
+
         .popup-gallery-item:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        
+
         .popup-gallery-item img {
             position: absolute;
             top: 0;
@@ -120,7 +120,7 @@
             height: 100%;
             object-fit: cover;
         }
-        
+
         .popup-gallery-item .gallery-caption {
             position: absolute;
             bottom: 0;
@@ -133,11 +133,61 @@
             opacity: 0;
             transition: opacity 0.2s;
         }
-        
+
         .popup-gallery-item:hover .gallery-caption {
             opacity: 1;
         }
-        
+
+        /* NEW: Upload button styles */
+        .popup-upload-button {
+            background-color: #B3A369;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .popup-upload-button:hover {
+            background-color: #8b7f47;
+        }
+
+        .popup-upload-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .popup-login-link {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .popup-login-link:hover {
+            background-color: #545b62;
+            color: white;
+        }
+
         /* Lightbox Modal */
         .lightbox {
             display: none;
@@ -150,12 +200,12 @@
             background-color: rgba(0,0,0,0.95);
             animation: fadeIn 0.3s;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        
+
         .lightbox-content {
             position: relative;
             margin: auto;
@@ -166,20 +216,20 @@
             transform: translateY(-50%);
             text-align: center;
         }
-        
+
         .lightbox-image {
             max-width: 100%;
             max-height: 80vh;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
-        
+
         .lightbox-caption {
             color: white;
             padding: 20px;
             font-size: 18px;
         }
-        
+
         .lightbox-close {
             position: absolute;
             top: 20px;
@@ -191,11 +241,11 @@
             transition: color 0.3s;
             z-index: 10001;
         }
-        
+
         .lightbox-close:hover {
             color: #B3A369;
         }
-        
+
         .lightbox-nav {
             position: absolute;
             top: 50%;
@@ -211,32 +261,32 @@
             user-select: none;
             z-index: 10001;
         }
-        
+
         .lightbox-nav:hover {
             background-color: rgba(179, 163, 105, 0.8);
         }
-        
+
         .lightbox-prev {
             left: 20px;
         }
-        
+
         .lightbox-next {
             right: 20px;
         }
-        
+
         /* Leaflet popup custom styling */
         .leaflet-popup-content-wrapper {
             padding: 0;
             border-radius: 5px;
             overflow: hidden;
         }
-        
+
         .leaflet-popup-content {
             margin: 0;
             padding: 10px;
             min-width: 300px;
         }
-        
+
         .landmark-link {
             cursor: pointer;
             color: #B3A369;
@@ -244,29 +294,33 @@
             padding: 2px 0;
             display: inline-block;
         }
-        
+
         .landmark-link:hover {
             color: #8B7A4A;
         }
-        
+
         @media (max-width: 768px) {
             .popup-gallery-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .popup-card {
                 max-width: 90vw;
             }
-            
+
             .lightbox-nav {
                 font-size: 40px;
                 padding: 15px;
             }
-            
+
             .lightbox-close {
                 top: 10px;
                 right: 20px;
                 font-size: 40px;
+            }
+
+            .popup-actions {
+                flex-direction: column;
             }
         }
     </style>
@@ -274,11 +328,11 @@
 <body>
     <div class="header">
         <h1>🏛️ Georgia Tech Campus Map</h1>
-        <p>Click on markers to see photo galleries and details!</p>
+        <p>Click on markers to see photo galleries and upload your own photos!</p>
     </div>
-    
+
     <div id="map"></div>
-    
+
     <!-- Lightbox Modal -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="event.stopPropagation(); closeLightbox()">&times;</span>
@@ -289,7 +343,7 @@
         <span class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); changeLightboxImage(-1)">&#10094;</span>
         <span class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); changeLightboxImage(1)">&#10095;</span>
     </div>
-    
+
     <script>
         // Define campus boundary coordinates (approximate campus perimeter)
         var campusBoundary = [
@@ -299,13 +353,13 @@
             [33.7700, -84.4000], // Southwest corner
             [33.7785, -84.4000]  // Close the polygon
         ];
-        
+
         // Define map bounds to restrict panning (slightly larger than boundary for padding)
         var campusBounds = [
             [33.7690, -84.4010], // Southwest corner
             [33.7795, -84.3890]  // Northeast corner
         ];
-        
+
         // Initialize the map centered on Georgia Tech campus with restricted bounds
         var map = L.map('map', {
             center: [33.7756, -84.3963],
@@ -315,13 +369,13 @@
             minZoom: 15, // Prevent zooming out too far
             maxZoom: 19
         });
-        
+
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
-        
+
         // Add campus boundary polygon with border
         var campusBorder = L.polygon(campusBoundary, {
             color: '#B3A369', // Georgia Tech gold
@@ -330,11 +384,11 @@
             fillOpacity: 0.1,
             dashArray: '10, 5' // Dashed border style
         }).addTo(map);
-        
+
         // Global variables for lightbox
         var currentLightboxPhotos = [];
         var currentLightboxIndex = 0;
-        
+
         // Lightbox functions
         function openLightbox(photos, index) {
             currentLightboxPhotos = photos;
@@ -343,12 +397,12 @@
             document.getElementById('lightbox').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
-        
+
         function closeLightbox() {
             document.getElementById('lightbox').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
-        
+
         function changeLightboxImage(direction) {
             currentLightboxIndex += direction;
             if (currentLightboxIndex < 0) {
@@ -358,17 +412,17 @@
             }
             updateLightbox();
         }
-        
+
         function updateLightbox() {
             var lightboxImage = document.getElementById('lightbox-image');
             var lightboxCaption = document.getElementById('lightbox-caption');
-            
+
             if (currentLightboxPhotos.length > 0 && currentLightboxIndex < currentLightboxPhotos.length) {
                 lightboxImage.src = currentLightboxPhotos[currentLightboxIndex].image_url;
                 lightboxCaption.textContent = currentLightboxPhotos[currentLightboxIndex].caption || '';
             }
         }
-        
+
         // Close lightbox on Escape key
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
@@ -379,18 +433,18 @@
                 changeLightboxImage(1);
             }
         });
-        
-        // Function to generate popup HTML
+
+        // ENHANCED: Function to generate popup HTML with upload functionality
         function generatePopupHTML(landmark) {
             var html = '<div class="popup-card">';
             html += '<div class="popup-header"><h3>' + landmark.name + '</h3></div>';
             html += '<div class="popup-description">' + landmark.description + '</div>';
-            
+
             if (landmark.photos && landmark.photos.length > 0) {
                 html += '<div class="popup-gallery">';
-                html += '<div class="popup-gallery-title">📸 Photo Gallery</div>';
+                html += '<div class="popup-gallery-title">📸 Photo Gallery (' + landmark.photos.length + ' photos)</div>';
                 html += '<div class="popup-gallery-grid">';
-                
+
                 landmark.photos.forEach(function(photo, index) {
                     html += '<div class="popup-gallery-item" onclick="openLightbox(landmarkPhotos_' + landmark.id + ', ' + index + ')">';
                     html += '<img src="' + photo.image_url + '" alt="' + (photo.caption || '') + '" loading="lazy">';
@@ -399,17 +453,70 @@
                     }
                     html += '</div>';
                 });
-                
+
                 html += '</div></div>';
-                
+
                 // Store photos in a global variable for lightbox
                 window['landmarkPhotos_' + landmark.id] = landmark.photos;
+            } else {
+                html += '<div class="popup-gallery">';
+                html += '<div class="popup-gallery-title">📸 Photo Gallery</div>';
+                html += '<p style="color: #666; font-size: 12px; margin: 10px 0;">No photos yet. Be the first to share!</p>';
+                html += '</div>';
             }
-            
+
+            // NEW: Add action buttons
+            html += '<div class="popup-actions">';
+
+            {% if user.is_authenticated %}
+            html += '<button class="popup-upload-button" onclick="openPhotoUploadModal(' + landmark.id + ', \'' + landmark.name.replace(/'/g, "\\'") + '\')">';
+            html += '📸 Upload Photo</button>';
+            {% else %}
+            html += '<a href="/accounts/login/" class="popup-login-link">🔐 Login to Upload</a>';
+            {% endif %}
+
+            html += '</div>';
             html += '</div>';
             return html;
         }
-        
+
+        // NEW: Function to refresh landmark photos after upload
+        function refreshLandmarkPhotos(landmarkId) {
+            // Fetch updated photos from server
+            fetch('/landmark/' + landmarkId + '/photos/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Find the landmark and update its photos
+                        var landmark = landmarks.find(l => l.id === landmarkId);
+                        if (landmark) {
+                            landmark.photos = data.photos;
+
+                            // Update the global photos variable for lightbox
+                            window['landmarkPhotos_' + landmark.id] = data.photos;
+
+                            // Find and update the open popup if it exists
+                            map.eachLayer(function(layer) {
+                                if (layer instanceof L.Marker) {
+                                    var popup = layer.getPopup();
+                                    if (popup && popup.isOpen()) {
+                                        var latlng = layer.getLatLng();
+                                        if (Math.abs(latlng.lat - landmark.lat) < 0.0001 &&
+                                            Math.abs(latlng.lng - landmark.lng) < 0.0001) {
+                                            // Update popup content
+                                            popup.setContent(generatePopupHTML(landmark));
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing photos:', error);
+                });
+        }
+
         // Landmarks data from Django template
         var landmarks = [
             {% for landmark in landmarks %}
@@ -422,7 +529,7 @@
                 photos: [
                     {% for photo in landmark.photos %}
                     {
-                        image_url: "{{ photo.image_url|escapejs }}",
+                        image_url: "{{ photo.image_url_display|escapejs }}",
                         caption: "{{ photo.caption|escapejs }}"
                     }{% if not forloop.last %},{% endif %}
                     {% endfor %}
@@ -430,7 +537,7 @@
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ];
-        
+
         // Add markers for each landmark
         landmarks.forEach(function(landmark) {
             var marker = L.marker([landmark.lat, landmark.lng])
@@ -440,10 +547,10 @@
                     className: 'landmark-popup'
                 });
         });
-        
+
         // Add a control to show all landmarks with clickable links
         var landmarksControl = L.control({position: 'topright'});
-        
+
         landmarksControl.onAdd = function(map) {
             var div = L.DomUtil.create('div', 'landmarks-control');
             div.innerHTML = '<strong>Landmarks:</strong><br>';
@@ -453,9 +560,9 @@
             div.style.cssText = 'background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px; max-height: 400px; overflow-y: auto;';
             return div;
         };
-        
+
         landmarksControl.addTo(map);
-        
+
         // Function to focus on a landmark when clicked from the list
         function focusLandmark(landmarkId) {
             var landmark = landmarks.find(function(l) { return l.id === landmarkId; });
@@ -465,7 +572,7 @@
                 map.eachLayer(function(layer) {
                     if (layer instanceof L.Marker) {
                         var latlng = layer.getLatLng();
-                        if (Math.abs(latlng.lat - landmark.lat) < 0.0001 && 
+                        if (Math.abs(latlng.lat - landmark.lat) < 0.0001 &&
                             Math.abs(latlng.lng - landmark.lng) < 0.0001) {
                             layer.openPopup();
                         }
@@ -473,11 +580,14 @@
                 });
             }
         }
-        
-        // Make focusLandmark available globally
+
+        // Make functions available globally
         window.focusLandmark = focusLandmark;
         window.openLightbox = openLightbox;
+        window.refreshLandmarkPhotos = refreshLandmarkPhotos;
     </script>
+
+    <!-- NEW: Include photo upload modal -->
+    {% include 'campus_map/photo_upload_modal.html' %}
 </body>
 </html>
-
