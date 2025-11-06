@@ -496,10 +496,16 @@
                         // Find the landmark and update its photos
                         var landmark = landmarks.find(l => l.id === landmarkId);
                         if (landmark) {
-                            landmark.photos = data.photos;
+                            // Map API response (url) to frontend format (image_url)
+                            landmark.photos = data.photos.map(function(photo) {
+                                return {
+                                    image_url: photo.url || photo.image_url,
+                                    caption: photo.caption || ''
+                                };
+                            });
 
                             // Update the global photos variable for lightbox
-                            window['landmarkPhotos_' + landmark.id] = data.photos;
+                            window['landmarkPhotos_' + landmark.id] = landmark.photos;
 
                             // Find and update the open popup if it exists
                             map.eachLayer(function(layer) {
