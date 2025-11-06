@@ -130,8 +130,36 @@ document.getElementById('photoUploadForm').addEventListener('submit', function(e
     .then(data => {
         if (data.success) {
             showMessage('Photo uploaded successfully!', 'success');
+            // Immediately add the photo to the display if available
+            if (data.photo && data.photo.url) {
+                var landmark = landmarks.find(l => l.id === currentLandmarkId);
+                if (landmark) {
+                    // Add the new photo to the landmark's photos array
+                    if (!landmark.photos) {
+                        landmark.photos = [];
+                    }
+                    landmark.photos.push({
+                        image_url: data.photo.url,
+                        caption: data.photo.caption || ''
+                    });
+                    // Update the popup if it's open
+                    map.eachLayer(function(layer) {
+                        if (layer instanceof L.Marker) {
+                            var popup = layer.getPopup();
+                            if (popup && popup.isOpen()) {
+                                var latlng = layer.getLatLng();
+                                if (Math.abs(latlng.lat - landmark.lat) < 0.0001 &&
+                                    Math.abs(latlng.lng - landmark.lng) < 0.0001) {
+                                    popup.setContent(generatePopupHTML(landmark));
+                                }
+                            }
+                        }
+                    });
+                }
+            }
             setTimeout(() => {
                 closePhotoUploadModal();
+                // Refresh to get the latest from server (in case of approval status)
                 if (typeof refreshLandmarkPhotos === 'function') {
                     refreshLandmarkPhotos(currentLandmarkId);
                 } else {
