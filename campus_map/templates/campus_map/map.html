@@ -299,6 +299,172 @@
             color: #8B7A4A;
         }
 
+        /* Weather Button Styles */
+        .weather-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: #B3A369;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-toggle-btn:hover {
+            background-color: #8B7A4A;
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .weather-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Weather Panel Styles */
+        .weather-panel {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 400px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+            z-index: 999;
+            transition: left 0.4s ease;
+            overflow-y: auto;
+            color: white;
+        }
+
+        .weather-panel.open {
+            left: 0;
+        }
+
+        .weather-panel-header {
+            background-color: rgba(0,0,0,0.2);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .weather-panel-header h2 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .weather-panel-header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .weather-panel-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-panel-close:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        .weather-content {
+            padding: 25px;
+        }
+
+        .weather-current {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .weather-temp {
+            font-size: 64px;
+            font-weight: 300;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .weather-description {
+            font-size: 20px;
+            text-transform: capitalize;
+            margin-bottom: 10px;
+        }
+
+        .weather-icon {
+            font-size: 80px;
+            margin: 15px 0;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .weather-detail-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .weather-detail-item .label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .weather-detail-item .value {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .weather-loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .weather-error {
+            background-color: rgba(255,0,0,0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px;
+        }
+
         @media (max-width: 768px) {
             .popup-gallery-grid {
                 grid-template-columns: 1fr;
@@ -322,6 +488,17 @@
             .popup-actions {
                 flex-direction: column;
             }
+
+            .weather-panel {
+                width: 100%;
+                left: -100%;
+            }
+
+            .weather-toggle-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -332,6 +509,61 @@
     </div>
 
     <div id="map"></div>
+
+    <!-- Weather Toggle Button -->
+    <button class="weather-toggle-btn" onclick="toggleWeatherPanel()" title="View Weather">
+        🌤️
+    </button>
+
+    <!-- Weather Panel -->
+    <div class="weather-panel" id="weatherPanel">
+        <button class="weather-panel-close" onclick="toggleWeatherPanel()">×</button>
+        <div class="weather-panel-header">
+            <h2>Atlanta Weather</h2>
+            <p>Current conditions</p>
+        </div>
+        <div class="weather-content">
+            <div id="weatherLoading" class="weather-loading">
+                Loading weather data...
+            </div>
+            <div id="weatherData" style="display: none;">
+                <div class="weather-current">
+                    <div class="weather-icon" id="weatherIcon">☀️</div>
+                    <div class="weather-temp" id="weatherTemp">--°F</div>
+                    <div class="weather-description" id="weatherDescription">--</div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-detail-item">
+                        <div class="label">Feels Like</div>
+                        <div class="value" id="weatherFeelsLike">--°F</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Humidity</div>
+                        <div class="value" id="weatherHumidity">--%</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Wind Speed</div>
+                        <div class="value" id="weatherWind">-- mph</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Pressure</div>
+                        <div class="value" id="weatherPressure">-- hPa</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Visibility</div>
+                        <div class="value" id="weatherVisibility">-- mi</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Cloudiness</div>
+                        <div class="value" id="weatherClouds">--%</div>
+                    </div>
+                </div>
+            </div>
+            <div id="weatherError" class="weather-error" style="display: none;">
+                Failed to load weather data. Please try again later.
+            </div>
+        </div>
+    </div>
 
     <!-- Lightbox Modal -->
     <div id="lightbox" class="lightbox" onclick="closeLightbox()">
@@ -591,6 +823,125 @@
         window.focusLandmark = focusLandmark;
         window.openLightbox = openLightbox;
         window.refreshLandmarkPhotos = refreshLandmarkPhotos;
+
+        // Weather Panel Functions
+        function toggleWeatherPanel() {
+            var panel = document.getElementById('weatherPanel');
+            panel.classList.toggle('open');
+            
+            // Fetch weather data when opening panel for the first time
+            if (panel.classList.contains('open') && !panel.dataset.loaded) {
+                fetchWeatherData();
+                panel.dataset.loaded = 'true';
+            }
+        }
+
+        function getWeatherEmoji(weatherCode, description) {
+            // Map WMO weather codes to emojis
+            if (weatherCode === 0 || weatherCode === 1) return '☀️'; // Clear/mainly clear
+            if (weatherCode === 2) return '⛅'; // Partly cloudy
+            if (weatherCode === 3) return '☁️'; // Overcast
+            if (weatherCode === 45 || weatherCode === 48) return '🌫️'; // Fog
+            if (weatherCode >= 51 && weatherCode <= 55) return '🌦️'; // Drizzle
+            if (weatherCode >= 61 && weatherCode <= 65) return '🌧️'; // Rain
+            if (weatherCode >= 71 && weatherCode <= 77) return '🌨️'; // Snow
+            if (weatherCode >= 80 && weatherCode <= 82) return '🌧️'; // Rain showers
+            if (weatherCode >= 85 && weatherCode <= 86) return '🌨️'; // Snow showers
+            if (weatherCode >= 95 && weatherCode <= 99) return '⛈️'; // Thunderstorm
+            return '🌤️'; // Default
+        }
+
+        async function fetchWeatherData() {
+            // Using Open-Meteo API (no API key required)
+            // Atlanta coordinates: 33.7490° N, 84.3880° W
+            const lat = 33.7490;
+            const lon = -84.3880;
+            
+            // Show loading state
+            document.getElementById('weatherLoading').style.display = 'block';
+            document.getElementById('weatherData').style.display = 'none';
+            document.getElementById('weatherError').style.display = 'none';
+
+            // Open-Meteo API endpoint
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,visibility,cloud_cover&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York`;
+            
+            try {
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Weather data not available');
+                }
+                
+                const data = await response.json();
+                
+                // Hide loading, show data
+                document.getElementById('weatherLoading').style.display = 'none';
+                document.getElementById('weatherData').style.display = 'block';
+                
+                // Update weather information
+                const current = data.current;
+                const temp = Math.round(current.temperature_2m);
+                const feelsLike = Math.round(current.apparent_temperature);
+                const humidity = current.relative_humidity_2m;
+                const windSpeed = Math.round(current.wind_speed_10m);
+                const pressure = Math.round(current.pressure_msl);
+                const visibility = Math.round(current.visibility / 1609.34); // Convert meters to miles
+                const clouds = current.cloud_cover;
+                const weatherCode = current.weather_code;
+                const description = getWeatherDescription(weatherCode);
+                
+                document.getElementById('weatherTemp').textContent = temp + '°F';
+                document.getElementById('weatherDescription').textContent = description;
+                document.getElementById('weatherFeelsLike').textContent = feelsLike + '°F';
+                document.getElementById('weatherHumidity').textContent = humidity + '%';
+                document.getElementById('weatherWind').textContent = windSpeed + ' mph';
+                document.getElementById('weatherPressure').textContent = pressure + ' hPa';
+                document.getElementById('weatherVisibility').textContent = visibility + ' mi';
+                document.getElementById('weatherClouds').textContent = clouds + '%';
+                document.getElementById('weatherIcon').textContent = getWeatherEmoji(weatherCode, description);
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                document.getElementById('weatherLoading').style.display = 'none';
+                document.getElementById('weatherError').style.display = 'block';
+                document.getElementById('weatherError').textContent = 
+                    'Unable to load weather data. Please try again later.';
+            }
+        }
+        
+        function getWeatherDescription(code) {
+            // WMO Weather interpretation codes
+            const descriptions = {
+                0: 'Clear sky',
+                1: 'Mainly clear',
+                2: 'Partly cloudy',
+                3: 'Overcast',
+                45: 'Foggy',
+                48: 'Depositing rime fog',
+                51: 'Light drizzle',
+                53: 'Moderate drizzle',
+                55: 'Dense drizzle',
+                61: 'Slight rain',
+                63: 'Moderate rain',
+                65: 'Heavy rain',
+                71: 'Slight snow',
+                73: 'Moderate snow',
+                75: 'Heavy snow',
+                77: 'Snow grains',
+                80: 'Slight rain showers',
+                81: 'Moderate rain showers',
+                82: 'Violent rain showers',
+                85: 'Slight snow showers',
+                86: 'Heavy snow showers',
+                95: 'Thunderstorm',
+                96: 'Thunderstorm with slight hail',
+                99: 'Thunderstorm with heavy hail'
+            };
+            return descriptions[code] || 'Unknown';
+        }
+
+        // Make weather functions available globally
+        window.toggleWeatherPanel = toggleWeatherPanel;
+        window.fetchWeatherData = fetchWeatherData;
     </script>
 
     <!-- NEW: Include photo upload modal -->
