@@ -118,7 +118,31 @@ def campus_map_view(request):
                     {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+3', 'caption': f'{landmark.name} - Photo 3'},
                 ]
             else:
-                photos_data = [{'image_url': photo.image_url_display, 'caption': photo.caption} for photo in photos]
+                photos_data = []
+                for photo in photos:
+                    img_url = photo.image_url_display
+                    # Skip placeholder if the actual file doesn't exist
+                    if img_url and img_url.strip() and img_url != '/static/images/placeholder.jpg':
+                        # Ensure relative URLs are properly formatted
+                        if img_url.startswith('/media/') or img_url.startswith('/static/'):
+                            # Relative URL - should work with Django's static/media serving
+                            photos_data.append({'image_url': img_url, 'caption': photo.caption})
+                        elif img_url.startswith('http://') or img_url.startswith('https://'):
+                            # Absolute URL - use as is
+                            photos_data.append({'image_url': img_url, 'caption': photo.caption})
+                        else:
+                            # Other relative URL - try to make it work
+                            if not img_url.startswith('/'):
+                                img_url = '/' + img_url
+                            photos_data.append({'image_url': img_url, 'caption': photo.caption})
+                
+                # If no valid photos after filtering, use placeholders
+                if not photos_data:
+                    photos_data = [
+                        {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+1', 'caption': f'{landmark.name} - Photo 1'},
+                        {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+2', 'caption': f'{landmark.name} - Photo 2'},
+                        {'image_url': f'https://via.placeholder.com/600x400?text={landmark.name.replace(" ", "+")}+3', 'caption': f'{landmark.name} - Photo 3'},
+                    ]
 
             landmarks_data.append({
                 'id': landmark.id,

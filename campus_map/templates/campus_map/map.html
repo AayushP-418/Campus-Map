@@ -447,7 +447,13 @@
 
                 landmark.photos.forEach(function(photo, index) {
                     html += '<div class="popup-gallery-item" onclick="openLightbox(landmarkPhotos_' + landmark.id + ', ' + index + ')">';
-                    html += '<img src="' + photo.image_url + '" alt="' + (photo.caption || '') + '" loading="lazy">';
+                    var imgSrc = photo.image_url || '';
+                    // Debug: log image URL
+                    console.log('Photo URL for ' + landmark.name + ':', imgSrc);
+                    if (!imgSrc || imgSrc.trim() === '') {
+                        console.warn('Empty image URL for photo:', photo);
+                    }
+                    html += '<img src="' + imgSrc + '" alt="' + (photo.caption || '') + '" loading="lazy" onerror="console.error(\'Image failed to load:\', this.src); this.style.display=\'none\'; this.parentElement.style.background=\'#f0f0f0\'; this.parentElement.innerHTML=\'<div style=\'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:10px;color:#666;\'><div style=\'font-size:24px;margin-bottom:5px;\'>📷</div><div style=\'font-size:12px;\'>' + (photo.caption || 'No image') + '</div></div>\';">';
                     if (photo.caption) {
                         html += '<div class="gallery-caption">' + photo.caption + '</div>';
                     }
@@ -529,7 +535,7 @@
                 photos: [
                     {% for photo in landmark.photos %}
                     {
-                        image_url: "{{ photo.image_url_display|escapejs }}",
+                        image_url: "{{ photo.image_url|escapejs }}",
                         caption: "{{ photo.caption|escapejs }}"
                     }{% if not forloop.last %},{% endif %}
                     {% endfor %}
