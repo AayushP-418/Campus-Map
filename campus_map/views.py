@@ -13,8 +13,8 @@ def campus_map_view(request):
             {
                 'id': 1,
                 'name': 'Tech Tower',
-                'latitude': 33.7756,
-                'longitude': -84.3963,
+                'latitude': 33.7718,
+                'longitude': -84.3944,
                 'description': 'The iconic Tech Tower, the main administrative building of Georgia Tech.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=Tech+Tower+1', 'caption': 'Tech Tower - Photo 1'},
@@ -26,7 +26,7 @@ def campus_map_view(request):
                 'id': 2,
                 'name': 'Bobby Dodd Stadium',
                 'latitude': 33.7725,
-                'longitude': -84.3933,
+                'longitude': -84.3929,
                 'description': 'Home of the Georgia Tech Yellow Jackets football team.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=Bobby+Dodd+Stadium+1', 'caption': 'Bobby Dodd Stadium - Photo 1'},
@@ -37,8 +37,8 @@ def campus_map_view(request):
             {
                 'id': 3,
                 'name': 'Klaus Advanced Computing Building',
-                'latitude': 33.7775,
-                'longitude': -84.3958,
+                'latitude': 33.7772,
+                'longitude': -84.3963,
                 'description': 'State-of-the-art computing facility housing the College of Computing.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=Klaus+Building+1', 'caption': 'Klaus Building - Photo 1'},
@@ -49,8 +49,8 @@ def campus_map_view(request):
             {
                 'id': 4,
                 'name': 'Student Center',
-                'latitude': 33.7750,
-                'longitude': -84.3980,
+                'latitude': 33.7740,
+                'longitude': -84.3988,
                 'description': 'The heart of student life with dining, events, and student services.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=Student+Center+1', 'caption': 'Student Center - Photo 1'},
@@ -61,8 +61,8 @@ def campus_map_view(request):
             {
                 'id': 5,
                 'name': 'Library',
-                'latitude': 33.7765,
-                'longitude': -84.3975,
+                'latitude': 33.7743,
+                'longitude': -84.3958,
                 'description': 'Price Gilbert Library - the main library on campus.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=Library+1', 'caption': 'Library - Photo 1'},
@@ -73,8 +73,8 @@ def campus_map_view(request):
             {
                 'id': 6,
                 'name': 'Campus Recreation Center',
-                'latitude': 33.7730,
-                'longitude': -84.3950,
+                'latitude': 33.7755,
+                'longitude': -84.4040,
                 'description': 'CRC - Campus recreation and fitness facility.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=CRC+1', 'caption': 'CRC - Photo 1'},
@@ -85,8 +85,8 @@ def campus_map_view(request):
             {
                 'id': 7,
                 'name': 'Clough Undergraduate Learning Commons',
-                'latitude': 33.7745,
-                'longitude': -84.3965,
+                'latitude': 33.7748,
+                'longitude': -84.3964,
                 'description': 'CULC - Modern study and collaboration space for students.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=CULC+1', 'caption': 'CULC - Photo 1'},
@@ -97,8 +97,8 @@ def campus_map_view(request):
             {
                 'id': 8,
                 'name': 'Tech Green',
-                'latitude': 33.7755,
-                'longitude': -84.3965,
+                'latitude': 33.7745,
+                'longitude': -84.3973,
                 'description': 'The central green space on campus, a popular gathering area.',
                 'photos': [
                     {'image_url': 'https://via.placeholder.com/600x400?text=Tech+Green+1', 'caption': 'Tech Green - Photo 1'},
