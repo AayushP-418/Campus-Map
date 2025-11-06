@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Georgia Tech Campus Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #B3A369;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+
+        #map {
+            height: calc(100vh - 120px);
+            width: 100%;
+            margin: 0;
+            z-index: 1;
+        }
+
+        /* Popup Card Styles */
+        .popup-card {
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+        }
+
+        .popup-header {
+            background-color: #B3A369;
+            color: white;
+            padding: 20px;
+            margin: -10px -10px 15px -10px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .popup-header h3 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .popup-description {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .popup-gallery {
+            margin-top: 15px;
+        }
+
+        .popup-gallery-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #B3A369;
+            margin-bottom: 12px;
+        }
+
+        .popup-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .popup-gallery-item {
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            overflow: hidden;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .popup-gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .popup-gallery-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .popup-gallery-item .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
+            padding: 8px;
+            font-size: 11px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .popup-gallery-item:hover .gallery-caption {
+            opacity: 1;
+        }
+
+        /* NEW: Upload button styles */
+        .popup-upload-button {
+            background-color: #B3A369;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .popup-upload-button:hover {
+            background-color: #8b7f47;
+        }
+
+        .popup-upload-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .popup-login-link {
+            background-color: #6c757d;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .popup-login-link:hover {
+            background-color: #545b62;
+            color: white;
+        }
+
+        /* Lightbox Modal */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .lightbox-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 90vh;
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .lightbox-caption {
+            color: white;
+            padding: 20px;
+            font-size: 18px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            z-index: 10001;
+        }
+
+        .lightbox-close:hover {
+            color: #B3A369;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 20px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            transition: background-color 0.3s;
+            user-select: none;
+            z-index: 10001;
+        }
+
+        .lightbox-nav:hover {
+            background-color: rgba(179, 163, 105, 0.8);
+        }
+
+        .lightbox-prev {
+            left: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+        }
+
+        /* Leaflet popup custom styling */
+        .leaflet-popup-content-wrapper {
+            padding: 0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            padding: 10px;
+            min-width: 300px;
+        }
+
+        .landmark-link {
+            cursor: pointer;
+            color: #B3A369;
+            text-decoration: underline;
+            padding: 2px 0;
+            display: inline-block;
+        }
+
+        .landmark-link:hover {
+            color: #8B7A4A;
+        }
+
+        /* Weather Button Styles */
+        .weather-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background-color: #B3A369;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-toggle-btn:hover {
+            background-color: #8B7A4A;
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .weather-toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Weather Panel Styles */
+        .weather-panel {
+            position: fixed;
+            top: 0;
+            left: -400px;
+            width: 400px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 2px 0 20px rgba(0,0,0,0.3);
+            z-index: 999;
+            transition: left 0.4s ease;
+            overflow-y: auto;
+            color: white;
+        }
+
+        .weather-panel.open {
+            left: 0;
+        }
+
+        .weather-panel-header {
+            background-color: rgba(0,0,0,0.2);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .weather-panel-header h2 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .weather-panel-header p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .weather-panel-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-panel-close:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+
+        .weather-content {
+            padding: 25px;
+        }
+
+        .weather-current {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .weather-temp {
+            font-size: 64px;
+            font-weight: 300;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .weather-description {
+            font-size: 20px;
+            text-transform: capitalize;
+            margin-bottom: 10px;
+        }
+
+        .weather-icon {
+            font-size: 80px;
+            margin: 15px 0;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .weather-detail-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .weather-detail-item .label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .weather-detail-item .value {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .weather-loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .weather-error {
+            background-color: rgba(255,0,0,0.2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .popup-gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .popup-card {
+                max-width: 90vw;
+            }
+
+            .lightbox-nav {
+                font-size: 40px;
+                padding: 15px;
+            }
+
+            .lightbox-close {
+                top: 10px;
+                right: 20px;
+                font-size: 40px;
+            }
+
+            .popup-actions {
+                flex-direction: column;
+            }
+
+            .weather-panel {
+                width: 100%;
+                left: -100%;
+            }
+
+            .weather-toggle-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ Georgia Tech Campus Map</h1>
+        <p>Click on markers to see photo galleries and upload your own photos!</p>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Weather Toggle Button -->
+    <button class="weather-toggle-btn" onclick="toggleWeatherPanel()" title="View Weather">
+        🌤️
+    </button>
+
+    <!-- Weather Panel -->
+    <div class="weather-panel" id="weatherPanel">
+        <button class="weather-panel-close" onclick="toggleWeatherPanel()">×</button>
+        <div class="weather-panel-header">
+            <h2>Atlanta Weather</h2>
+            <p>Current conditions</p>
+        </div>
+        <div class="weather-content">
+            <div id="weatherLoading" class="weather-loading">
+                Loading weather data...
+            </div>
+            <div id="weatherData" style="display: none;">
+                <div class="weather-current">
+                    <div class="weather-icon" id="weatherIcon">☀️</div>
+                    <div class="weather-temp" id="weatherTemp">--°F</div>
+                    <div class="weather-description" id="weatherDescription">--</div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-detail-item">
+                        <div class="label">Feels Like</div>
+                        <div class="value" id="weatherFeelsLike">--°F</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Humidity</div>
+                        <div class="value" id="weatherHumidity">--%</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Wind Speed</div>
+                        <div class="value" id="weatherWind">-- mph</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Pressure</div>
+                        <div class="value" id="weatherPressure">-- hPa</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Visibility</div>
+                        <div class="value" id="weatherVisibility">-- mi</div>
+                    </div>
+                    <div class="weather-detail-item">
+                        <div class="label">Cloudiness</div>
+                        <div class="value" id="weatherClouds">--%</div>
+                    </div>
+                </div>
+            </div>
+            <div id="weatherError" class="weather-error" style="display: none;">
+                Failed to load weather data. Please try again later.
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="event.stopPropagation(); closeLightbox()">&times;</span>
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
+        <span class="lightbox-nav lightbox-prev" onclick="event.stopPropagation(); changeLightboxImage(-1)">&#10094;</span>
+        <span class="lightbox-nav lightbox-next" onclick="event.stopPropagation(); changeLightboxImage(1)">&#10095;</span>
+    </div>
+
+    <script>
+        // Define campus boundary coordinates (approximate campus perimeter)
+        var campusBoundary = [
+            [33.7785, -84.4000], // Northwest corner
+            [33.7785, -84.3900], // Northeast corner
+            [33.7700, -84.3900], // Southeast corner
+            [33.7700, -84.4000], // Southwest corner
+            [33.7785, -84.4000]  // Close the polygon
+        ];
+
+        // Define map bounds to restrict panning (slightly larger than boundary for padding)
+        var campusBounds = [
+            [33.7690, -84.4010], // Southwest corner
+            [33.7795, -84.3890]  // Northeast corner
+        ];
+
+        // Initialize the map centered on Georgia Tech campus with restricted bounds
+        var map = L.map('map', {
+            center: [33.7756, -84.3963],
+            zoom: 16,
+            maxBounds: campusBounds,
+            maxBoundsViscosity: 1.0, // Prevents panning outside bounds
+            minZoom: 15, // Prevent zooming out too far
+            maxZoom: 19
+        });
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Add campus boundary polygon with border
+        var campusBorder = L.polygon(campusBoundary, {
+            color: '#B3A369', // Georgia Tech gold
+            weight: 3,
+            fillColor: '#B3A369',
+            fillOpacity: 0.1,
+            dashArray: '10, 5' // Dashed border style
+        }).addTo(map);
+
+        // Global variables for lightbox
+        var currentLightboxPhotos = [];
+        var currentLightboxIndex = 0;
+
+        // Lightbox functions
+        function openLightbox(photos, index) {
+            currentLightboxPhotos = photos;
+            currentLightboxIndex = index;
+            updateLightbox();
+            document.getElementById('lightbox').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function changeLightboxImage(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex < 0) {
+                currentLightboxIndex = currentLightboxPhotos.length - 1;
+            } else if (currentLightboxIndex >= currentLightboxPhotos.length) {
+                currentLightboxIndex = 0;
+            }
+            updateLightbox();
+        }
+
+        function updateLightbox() {
+            var lightboxImage = document.getElementById('lightbox-image');
+            var lightboxCaption = document.getElementById('lightbox-caption');
+
+            if (currentLightboxPhotos.length > 0 && currentLightboxIndex < currentLightboxPhotos.length) {
+                lightboxImage.src = currentLightboxPhotos[currentLightboxIndex].image_url;
+                lightboxCaption.textContent = currentLightboxPhotos[currentLightboxIndex].caption || '';
+            }
+        }
+
+        // Close lightbox on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeLightbox();
+            } else if (event.key === 'ArrowLeft') {
+                changeLightboxImage(-1);
+            } else if (event.key === 'ArrowRight') {
+                changeLightboxImage(1);
+            }
+        });
+
+        // ENHANCED: Function to generate popup HTML with upload functionality
+        function generatePopupHTML(landmark) {
+            var html = '<div class="popup-card">';
+            html += '<div class="popup-header"><h3>' + landmark.name + '</h3></div>';
+            html += '<div class="popup-description">' + landmark.description + '</div>';
+
+            if (landmark.photos && landmark.photos.length > 0) {
+                html += '<div class="popup-gallery">';
+                html += '<div class="popup-gallery-title">📸 Photo Gallery (' + landmark.photos.length + ' photos)</div>';
+                html += '<div class="popup-gallery-grid">';
+
+                landmark.photos.forEach(function(photo, index) {
+                    html += '<div class="popup-gallery-item" onclick="openLightbox(landmarkPhotos_' + landmark.id + ', ' + index + ')">';
+                    var imgSrc = photo.image_url || '';
+                    // Debug: log image URL
+                    console.log('Photo URL for ' + landmark.name + ':', imgSrc);
+                    if (!imgSrc || imgSrc.trim() === '') {
+                        console.warn('Empty image URL for photo:', photo);
+                    }
+                    html += '<img src="' + imgSrc + '" alt="' + (photo.caption || '') + '" loading="lazy" onerror="console.error(\'Image failed to load:\', this.src); this.style.display=\'none\'; this.parentElement.style.background=\'#f0f0f0\'; this.parentElement.innerHTML=\'<div style=\'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;padding:10px;color:#666;\'><div style=\'font-size:24px;margin-bottom:5px;\'>📷</div><div style=\'font-size:12px;\'>' + (photo.caption || 'No image') + '</div></div>\';">';
+                    if (photo.caption) {
+                        html += '<div class="gallery-caption">' + photo.caption + '</div>';
+                    }
+                    html += '</div>';
+                });
+
+                html += '</div></div>';
+
+                // Store photos in a global variable for lightbox
+                window['landmarkPhotos_' + landmark.id] = landmark.photos;
+            } else {
+                html += '<div class="popup-gallery">';
+                html += '<div class="popup-gallery-title">📸 Photo Gallery</div>';
+                html += '<p style="color: #666; font-size: 12px; margin: 10px 0;">No photos yet. Be the first to share!</p>';
+                html += '</div>';
+            }
+
+            // NEW: Add action buttons
+            html += '<div class="popup-actions">';
+
+            {% if user.is_authenticated %}
+            html += '<button class="popup-upload-button" onclick="openPhotoUploadModal(' + landmark.id + ', \'' + landmark.name.replace(/'/g, "\\'") + '\')">';
+            html += '📸 Upload Photo</button>';
+            {% else %}
+            html += '<a href="/accounts/login/" class="popup-login-link">🔐 Login to Upload</a>';
+            {% endif %}
+
+            html += '</div>';
+            html += '</div>';
+            return html;
+        }
+
+        // NEW: Function to refresh landmark photos after upload
+        function refreshLandmarkPhotos(landmarkId) {
+            // Fetch updated photos from server
+            fetch('/landmark/' + landmarkId + '/photos/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Find the landmark and update its photos
+                        var landmark = landmarks.find(l => l.id === landmarkId);
+                        if (landmark) {
+                            landmark.photos = data.photos.map(function(photo) {
+                                return {
+                                    image_url: photo.url ||photo.image_url,
+                                    caption: photo.caption || ''
+                                };
+                            });
+
+
+                            // Update the global photos variable for lightbox
+                            window['landmarkPhotos_' + landmark.id] = landmark.photos;
+
+                            // Find and update the open popup if it exists
+                            map.eachLayer(function(layer) {
+                                if (layer instanceof L.Marker) {
+                                    var popup = layer.getPopup();
+                                    if (popup && popup.isOpen()) {
+                                        var latlng = layer.getLatLng();
+                                        if (Math.abs(latlng.lat - landmark.lat) < 0.0001 &&
+                                            Math.abs(latlng.lng - landmark.lng) < 0.0001) {
+                                            // Update popup content
+                                            popup.setContent(generatePopupHTML(landmark));
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error refreshing photos:', error);
+                });
+        }
+
+        // Landmarks data from Django template
+        var landmarks = [
+            {% for landmark in landmarks %}
+            {
+                id: {{ landmark.id }},
+                name: "{{ landmark.name|escapejs }}",
+                lat: {{ landmark.latitude }},
+                lng: {{ landmark.longitude }},
+                description: "{{ landmark.description|escapejs }}",
+                photos: [
+                    {% for photo in landmark.photos %}
+                    {
+                        image_url: "{{ photo.image_url|escapejs }}",
+                        caption: "{{ photo.caption|escapejs }}"
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        // Add markers for each landmark
+        landmarks.forEach(function(landmark) {
+            var marker = L.marker([landmark.lat, landmark.lng])
+                .addTo(map)
+                .bindPopup(generatePopupHTML(landmark), {
+                    maxWidth: 500,
+                    className: 'landmark-popup'
+                });
+        });
+
+        // Add a control to show all landmarks with clickable links
+        var landmarksControl = L.control({position: 'topright'});
+
+        landmarksControl.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'landmarks-control');
+            div.innerHTML = '<strong>Landmarks:</strong><br>';
+            landmarks.forEach(function(landmark) {
+                div.innerHTML += '<span class="landmark-link" onclick="focusLandmark(' + landmark.id + ')">📍 ' + landmark.name + '</span><br>';
+            });
+            div.style.cssText = 'background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 12px; max-height: 400px; overflow-y: auto;';
+            return div;
+        };
+
+        landmarksControl.addTo(map);
+
+        // Function to focus on a landmark when clicked from the list
+        function focusLandmark(landmarkId) {
+            var landmark = landmarks.find(function(l) { return l.id === landmarkId; });
+            if (landmark) {
+                map.setView([landmark.lat, landmark.lng], 18);
+                // Find and open the marker popup
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.Marker) {
+                        var latlng = layer.getLatLng();
+                        if (Math.abs(latlng.lat - landmark.lat) < 0.0001 &&
+                            Math.abs(latlng.lng - landmark.lng) < 0.0001) {
+                            layer.openPopup();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Make functions available globally
+        window.focusLandmark = focusLandmark;
+        window.openLightbox = openLightbox;
+        window.refreshLandmarkPhotos = refreshLandmarkPhotos;
+
+        // Weather Panel Functions
+        function toggleWeatherPanel() {
+            var panel = document.getElementById('weatherPanel');
+            panel.classList.toggle('open');
+            
+            // Fetch weather data when opening panel for the first time
+            if (panel.classList.contains('open') && !panel.dataset.loaded) {
+                fetchWeatherData();
+                panel.dataset.loaded = 'true';
+            }
+        }
+
+        function getWeatherEmoji(weatherCode, description) {
+            // Map WMO weather codes to emojis
+            if (weatherCode === 0 || weatherCode === 1) return '☀️'; // Clear/mainly clear
+            if (weatherCode === 2) return '⛅'; // Partly cloudy
+            if (weatherCode === 3) return '☁️'; // Overcast
+            if (weatherCode === 45 || weatherCode === 48) return '🌫️'; // Fog
+            if (weatherCode >= 51 && weatherCode <= 55) return '🌦️'; // Drizzle
+            if (weatherCode >= 61 && weatherCode <= 65) return '🌧️'; // Rain
+            if (weatherCode >= 71 && weatherCode <= 77) return '🌨️'; // Snow
+            if (weatherCode >= 80 && weatherCode <= 82) return '🌧️'; // Rain showers
+            if (weatherCode >= 85 && weatherCode <= 86) return '🌨️'; // Snow showers
+            if (weatherCode >= 95 && weatherCode <= 99) return '⛈️'; // Thunderstorm
+            return '🌤️'; // Default
+        }
+
+        async function fetchWeatherData() {
+            // Using Open-Meteo API (no API key required)
+            // Atlanta coordinates: 33.7490° N, 84.3880° W
+            const lat = 33.7490;
+            const lon = -84.3880;
+            
+            // Show loading state
+            document.getElementById('weatherLoading').style.display = 'block';
+            document.getElementById('weatherData').style.display = 'none';
+            document.getElementById('weatherError').style.display = 'none';
+
+            // Open-Meteo API endpoint
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,pressure_msl,visibility,cloud_cover&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FNew_York`;
+            
+            try {
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Weather data not available');
+                }
+                
+                const data = await response.json();
+                
+                // Hide loading, show data
+                document.getElementById('weatherLoading').style.display = 'none';
+                document.getElementById('weatherData').style.display = 'block';
+                
+                // Update weather information
+                const current = data.current;
+                const temp = Math.round(current.temperature_2m);
+                const feelsLike = Math.round(current.apparent_temperature);
+                const humidity = current.relative_humidity_2m;
+                const windSpeed = Math.round(current.wind_speed_10m);
+                const pressure = Math.round(current.pressure_msl);
+                const visibility = Math.round(current.visibility / 1609.34); // Convert meters to miles
+                const clouds = current.cloud_cover;
+                const weatherCode = current.weather_code;
+                const description = getWeatherDescription(weatherCode);
+                
+                document.getElementById('weatherTemp').textContent = temp + '°F';
+                document.getElementById('weatherDescription').textContent = description;
+                document.getElementById('weatherFeelsLike').textContent = feelsLike + '°F';
+                document.getElementById('weatherHumidity').textContent = humidity + '%';
+                document.getElementById('weatherWind').textContent = windSpeed + ' mph';
+                document.getElementById('weatherPressure').textContent = pressure + ' hPa';
+                document.getElementById('weatherVisibility').textContent = visibility + ' mi';
+                document.getElementById('weatherClouds').textContent = clouds + '%';
+                document.getElementById('weatherIcon').textContent = getWeatherEmoji(weatherCode, description);
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                document.getElementById('weatherLoading').style.display = 'none';
+                document.getElementById('weatherError').style.display = 'block';
+                document.getElementById('weatherError').textContent = 
+                    'Unable to load weather data. Please try again later.';
+            }
+        }
+        
+        function getWeatherDescription(code) {
+            // WMO Weather interpretation codes
+            const descriptions = {
+                0: 'Clear sky',
+                1: 'Mainly clear',
+                2: 'Partly cloudy',
+                3: 'Overcast',
+                45: 'Foggy',
+                48: 'Depositing rime fog',
+                51: 'Light drizzle',
+                53: 'Moderate drizzle',
+                55: 'Dense drizzle',
+                61: 'Slight rain',
+                63: 'Moderate rain',
+                65: 'Heavy rain',
+                71: 'Slight snow',
+                73: 'Moderate snow',
+                75: 'Heavy snow',
+                77: 'Snow grains',
+                80: 'Slight rain showers',
+                81: 'Moderate rain showers',
+                82: 'Violent rain showers',
+                85: 'Slight snow showers',
+                86: 'Heavy snow showers',
+                95: 'Thunderstorm',
+                96: 'Thunderstorm with slight hail',
+                99: 'Thunderstorm with heavy hail'
+            };
+            return descriptions[code] || 'Unknown';
+        }
+
+        // Make weather functions available globally
+        window.toggleWeatherPanel = toggleWeatherPanel;
+        window.fetchWeatherData = fetchWeatherData;
+    </script>
+
+    <!-- NEW: Include photo upload modal -->
+    {% include 'campus_map/photo_upload_modal.html' %}
+</body>
+</html>
