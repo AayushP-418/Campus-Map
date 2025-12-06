@@ -29,6 +29,7 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         .header h1 {
@@ -39,6 +40,67 @@
         .header p {
             margin: 10px 0 0 0;
             opacity: 0.9;
+        }
+
+        .header-auth {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .header-auth a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid white;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+
+        .header-auth a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .header-auth .user-info {
+            color: white;
+            font-size: 14px;
+        }
+
+        .header-auth .user-info a {
+            border: none;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .header-auth .logout-form {
+            display: inline;
+        }
+
+        .header-auth .logout-form button {
+            background: none;
+            border: none;
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .header-auth .logout-form button:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header-auth {
+                position: static;
+                justify-content: center;
+                margin-top: 10px;
+            }
         }
 
         #map {
@@ -504,6 +566,21 @@
 </head>
 <body>
     <div class="header">
+        <div class="header-auth">
+            {% if user.is_authenticated %}
+                <a href="{% url 'my_photos' %}">📸 My Photos</a>
+                <span class="user-info">
+                    Welcome, {{ user.username }}! | 
+                    <form method="post" action="{% url 'logout' %}" class="logout-form" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit">Logout</button>
+                    </form>
+                </span>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'register' %}">Create Account</a>
+            {% endif %}
+        </div>
         <h1>🏛️ Georgia Tech Campus Map</h1>
         <p>Click on markers to see photo galleries and upload your own photos!</p>
     </div>
@@ -730,7 +807,7 @@
                         if (landmark) {
                             landmark.photos = data.photos.map(function(photo) {
                                 return {
-                                    image_url: photo.url ||photo.image_url,
+                                    image_url: photo.url || photo.image_url,
                                     caption: photo.caption || ''
                                 };
                             });

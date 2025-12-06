@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from django.contrib import messages
 from .models import Landmark, LandmarkPhoto
-from .forms import PhotoUploadForm
+from .forms import PhotoUploadForm, UserRegistrationForm, PhotoEditForm
 
 def campus_map_view(request):
     landmarks = Landmark.objects.all()
@@ -178,14 +179,14 @@ def landmark_detail(request, landmark_id):
         }
     except Landmark.DoesNotExist:
         default_landmarks = {
-            1: {'name': 'Tech Tower', 'description': 'The iconic Tech Tower, the main administrative building of Georgia Tech.', 'latitude': 33.7756, 'longitude': -84.3963},
-            2: {'name': 'Bobby Dodd Stadium', 'description': 'Home of the Georgia Tech Yellow Jackets football team.', 'latitude': 33.7725, 'longitude': -84.3933},
-            3: {'name': 'Klaus Advanced Computing Building', 'description': 'State-of-the-art computing facility housing the College of Computing.', 'latitude': 33.7775, 'longitude': -84.3958},
-            4: {'name': 'Student Center', 'description': 'The heart of student life with dining, events, and student services.', 'latitude': 33.7750, 'longitude': -84.3980},
-            5: {'name': 'Library', 'description': 'Price Gilbert Library - the main library on campus.', 'latitude': 33.7765, 'longitude': -84.3975},
-            6: {'name': 'Campus Recreation Center', 'description': 'CRC - Campus recreation and fitness facility.', 'latitude': 33.7730, 'longitude': -84.3950},
-            7: {'name': 'Clough Undergraduate Learning Commons', 'description': 'CULC - Modern study and collaboration space for students.', 'latitude': 33.7745, 'longitude': -84.3965},
-            8: {'name': 'Tech Green', 'description': 'The central green space on campus, a popular gathering area.', 'latitude': 33.7755, 'longitude': -84.3965},
+            1: {'name': 'Tech Tower', 'description': 'The iconic Tech Tower, the main administrative building of Georgia Tech.', 'latitude': 33.7718, 'longitude': -84.3944},
+            2: {'name': 'Bobby Dodd Stadium', 'description': 'Home of the Georgia Tech Yellow Jackets football team.', 'latitude': 33.7725, 'longitude': -84.3929},
+            3: {'name': 'Klaus Advanced Computing Building', 'description': 'State-of-the-art computing facility housing the College of Computing.', 'latitude': 33.7772, 'longitude': -84.3963},
+            4: {'name': 'Student Center', 'description': 'The heart of student life with dining, events, and student services.', 'latitude': 33.7740, 'longitude': -84.3988},
+            5: {'name': 'Library', 'description': 'Price Gilbert Library - the main library on campus.', 'latitude': 33.7743, 'longitude': -84.3958},
+            6: {'name': 'Campus Recreation Center', 'description': 'CRC - Campus recreation and fitness facility.', 'latitude': 33.7755, 'longitude': -84.4040},
+            7: {'name': 'Clough Undergraduate Learning Commons', 'description': 'CULC - Modern study and collaboration space for students.', 'latitude': 33.7748, 'longitude': -84.3964},
+            8: {'name': 'Tech Green', 'description': 'The central green space on campus, a popular gathering area.', 'latitude': 33.7745, 'longitude': -84.3973},
         }
 
         if landmark_id in default_landmarks:
@@ -277,3 +278,76 @@ def landmark_photos_api(request, landmark_id):
         'photos': photos_data,
         'total_photos': len(photos_data)
     })
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('campus_map')
+    
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Account created successfully! You can now upload photos.')
+            return redirect('campus_map')
+    else:
+        form = UserRegistrationForm()
+    
+    return render(request, 'registration/register.html', {'form': form})
+
+@login_required
+def my_photos(request):
+    """View to list all photos uploaded by the current user"""
+    photos = LandmarkPhoto.objects.filter(uploaded_by=request.user).order_by('-uploaded_at')
+    
+    context = {
+        'photos': photos,
+        'photo_count': photos.count()
+    }
+    return render(request, 'campus_map/my_photos.html', context)
+
+@login_required
+def edit_photo(request, photo_id):
+    """View to edit a photo (only if user owns it)"""
+    photo = get_object_or_404(LandmarkPhoto, id=photo_id)
+    
+    # Check if user owns this photo
+    if photo.uploaded_by != request.user:
+        messages.error(request, 'You do not have permission to edit this photo.')
+        return redirect('my_photos')
+    
+    if request.method == 'POST':
+        form = PhotoEditForm(request.POST, request.FILES, instance=photo)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Photo updated successfully!')
+            return redirect('my_photos')
+    else:
+        form = PhotoEditForm(instance=photo)
+    
+    context = {
+        'form': form,
+        'photo': photo
+    }
+    return render(request, 'campus_map/edit_photo.html', context)
+
+@login_required
+def delete_photo(request, photo_id):
+    """View to delete a photo (only if user owns it)"""
+    photo = get_object_or_404(LandmarkPhoto, id=photo_id)
+    
+    # Check if user owns this photo
+    if photo.uploaded_by != request.user:
+        messages.error(request, 'You do not have permission to delete this photo.')
+        return redirect('my_photos')
+    
+    if request.method == 'POST':
+        landmark_name = photo.landmark.name
+        photo.delete()
+        messages.success(request, f'Photo from {landmark_name} deleted successfully!')
+        return redirect('my_photos')
+    
+    context = {
+        'photo': photo
+    }
+    return render(request, 'campus_map/delete_photo.html', context)
