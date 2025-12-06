@@ -32,26 +32,8 @@ class LandmarkPhoto(models.Model):
 
     @property
     def image_url_display(self):
-        if self.image_file and self.image_file.name:
-            try:
-                # Django's ImageField.url should automatically include MEDIA_URL
-                url = self.image_file.url
-                # Ensure absolute URLs work, and relative URLs start with /
-                if url:
-                    # If it's a relative path without leading slash, add it
-                    if not url.startswith('http') and not url.startswith('/'):
-                        url = '/' + url
-                    # Ensure media URLs start with /media/
-                    elif url.startswith('media/') and not url.startswith('/media/'):
-                        url = '/' + url
-                    return url
-            except (ValueError, AttributeError):
-                # If url property fails, construct the URL manually
-                if self.image_file.name:
-                    from django.conf import settings
-                    import os
-                    # Construct URL manually
-                    return os.path.join(settings.MEDIA_URL, self.image_file.name).replace('\\', '/')
+        if self.image_file:
+            return self.image_file.url
         elif self.image_url:
             return self.image_url
         return '/static/images/placeholder.jpg'
